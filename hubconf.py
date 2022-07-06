@@ -1,6 +1,6 @@
 import importlib
-import os
 import sys
+from pathlib import Path
 
 import requests
 
@@ -56,15 +56,15 @@ def pipeline(model_id, library_name=None, task=None):
     assert library_name is not None
     assert task is not None
 
-    path = f"docker_images/{library_name}"
-    assert os.path.exists(path)
+    path = Path(__file__).parent / f"docker_images/{library_name}"
+    assert path.exists()
 
     pipeline_class_name = PIPELINES_MAP.get(task)
     assert pipeline_class_name is not None
 
-    sys.path.append(path)
+    sys.path.append(str(path))
     module = importlib.import_module(f"app.pipelines.{task.replace('-', '_')}")
-    sys.path.remove(path)
+    sys.path.remove(str(path))
 
     pipeline_class = getattr(module, pipeline_class_name)
     return pipeline_class(model_id)
